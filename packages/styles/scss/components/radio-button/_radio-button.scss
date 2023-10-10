@@ -230,7 +230,6 @@ $radio-border-width: 1px !default;
     @include skeleton;
 
     block-size: convert.to-rem(18px);
-
     inline-size: convert.to-rem(100px);
   }
 

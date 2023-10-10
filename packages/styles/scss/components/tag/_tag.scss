@@ -35,9 +35,7 @@
         ),
       )
     );
-
     @include layout.use('size', $default: 'md', $min: 'sm', $max: 'md');
-
     @include type-style('label-01');
     @include tag-theme($tag-background-gray, $tag-color-gray, $tag-hover-gray);
 
@@ -193,7 +191,8 @@
     color: currentColor;
     cursor: pointer;
     inline-size: layout.size('height');
-    transition: background-color $duration-fast-01 motion(standard, productive),
+    transition:
+      background-color $duration-fast-01 motion(standard, productive),
       box-shadow $duration-fast-01 motion(standard, productive);
 
     svg {
@@ -251,7 +250,6 @@
   // Skeleton state
   .#{$prefix}--tag.#{$prefix}--skeleton {
     @include skeleton;
-
     @include tag-theme(
       $bg-color: $skeleton-background,
       $text-color: $text-primary

@@ -120,5 +120,6 @@ $ranges: (
   @if map.has-key($ranges, $name) {
     @return map.get($ranges, $name);
   }
+
   @error 'Unable to find range with the name: #{$name}';
 }

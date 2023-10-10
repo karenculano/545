@@ -288,7 +288,8 @@
     }
 
     .#{$prefix}--tabs__nav-item .#{$prefix}--tabs__nav-link {
-      transition: color $duration-fast-01 motion(standard, productive),
+      transition:
+        color $duration-fast-01 motion(standard, productive),
         border-bottom-color $duration-fast-01 motion(standard, productive),
         outline $duration-fast-01 motion(standard, productive);
     }
@@ -372,7 +373,8 @@
       text-align: start;
       text-decoration: none;
       text-overflow: ellipsis;
-      transition: border $duration-fast-01 motion(standard, productive),
+      transition:
+        border $duration-fast-01 motion(standard, productive),
         outline $duration-fast-01 motion(standard, productive);
       white-space: nowrap;
 

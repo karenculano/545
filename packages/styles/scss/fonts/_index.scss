@@ -37,6 +37,7 @@ $fonts: map.merge($-fonts, $fonts);
   @if map.has-key($fonts, $name) {
     @return map.get($fonts, $name);
   }
+
   @return false;
 }
 

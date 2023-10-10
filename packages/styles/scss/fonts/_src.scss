@@ -94,6 +94,7 @@ $-akamai-filenames: (
     } @else {
       // Otherwise add weight + optional style (italic)
       $filename: '#{$filename}-#{$weight}';
+
       @if $style == italic {
         $filename: '#{$filename}Italic';
       }
@@ -103,6 +104,7 @@ $-akamai-filenames: (
 
     @each $format in $formats {
       $url: 'https://1.www.s81c.com/common/carbon/plex/fonts/#{$name}';
+
       @if $unicode-range {
         $url: 'https://1.www.s81c.com/common/carbon/plex/fonts/#{$name}/fonts/split/#{$format}/#{$filename}-#{$unicode-range}';
       } @else {
@@ -132,6 +134,7 @@ $-akamai-filenames: (
     } @else {
       // Otherwise add weight + optional style (italic)
       $filename: '#{$filename}-#{$weight}';
+
       @if $style == italic {
         $filename: '#{$filename}Italic';
       }
@@ -141,6 +144,7 @@ $-akamai-filenames: (
 
     @each $format in $formats {
       $url: $filename;
+
       @if $unicode-range {
         $url: '#{config.$font-path}/#{$name}/fonts/split/#{$format}/#{$filename}-#{$unicode-range}';
       } @else {
