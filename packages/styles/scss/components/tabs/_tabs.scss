@@ -176,7 +176,7 @@
     }
 
     .#{$prefix}--tab--overflow-nav-button--next {
-      position: absolute;
+      position: relative;
       inset-block: 0 0;
       inset-inline-end: 0;
     }
@@ -205,7 +205,7 @@
     }
 
     .#{$prefix}--tab--overflow-nav-button--previous {
-      position: absolute;
+      position: relative;
       inset-block: 0 0;
       inset-inline-start: 0;
     }
@@ -213,20 +213,11 @@
     .#{$prefix}--tab--overflow-nav-button--previous::before {
       position: absolute;
       z-index: 1;
-      background: $background;
+      // background: $background;
       block-size: 100%;
       content: '';
       inline-size: $spacing-08;
       inset-inline-end: 0;
-    }
-
-    &.#{$prefix}--tabs--contained
-      .#{$prefix}--tab--overflow-nav-button--previous::before {
-      background: linear-gradient(
-        to left,
-        rgba(255, 255, 255, 0),
-        $layer-accent
-      );
     }
 
     .#{$prefix}--tabs--light .#{$prefix}--tabs__overflow-indicator--left {
