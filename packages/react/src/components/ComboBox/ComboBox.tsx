@@ -15,6 +15,7 @@ import React, {
   useRef,
   useMemo,
   forwardRef,
+  useCallback,
   type ReactNode,
   type ComponentType,
   type ForwardedRef,
@@ -79,6 +80,23 @@ const defaultItemToString = <ItemType,>(item: ItemType | null) => {
 };
 
 const defaultShouldFilterItem = () => true;
+
+const autocompleteCustomFilter = ({
+  item,
+  inputValue,
+}: {
+  item: string;
+  inputValue: string | null;
+}): boolean => {
+  if (inputValue === null || inputValue === '') {
+    return true; // Show all items if there's no input
+  }
+
+  const lowercaseItem = item.toLowerCase();
+  const lowercaseInput = inputValue.toLowerCase();
+
+  return lowercaseItem.startsWith(lowercaseInput);
+};
 
 const getInputValue = <ItemType,>({
   initialSelectedItem,
@@ -310,6 +328,7 @@ export interface ComboBoxProps<ItemType>
    * Specify your own filtering logic by passing in a `shouldFilterItem`
    * function that takes in the current input and an item and passes back
    * whether or not the item should be filtered.
+   * this prop will be ignored if `typeahead` prop is enabled
    */
   shouldFilterItem?: (input: {
     item: ItemType;
@@ -334,6 +353,11 @@ export interface ComboBoxProps<ItemType>
   titleText?: ReactNode;
 
   /**
+   * **Experimental**: will enable autcomplete and typeahead for the input field
+   */
+  typeahead?: boolean;
+
+  /**
    * Specify whether the control is currently in warning state
    */
   warn?: boolean;
@@ -349,6 +373,10 @@ const ComboBox = forwardRef(
     props: ComboBoxProps<ItemType>,
     ref: ForwardedRef<HTMLInputElement>
   ) => {
+    const [cursorPosition, setCursorPosition] = useState(0);
+    const prevInputLengthRef = useRef(0);
+    const inputRef = useRef<HTMLInputElement>(null);
+
     const {
       ['aria-label']: ariaLabel = 'Choose an item',
       ariaLabel: deprecatedAriaLabel,
@@ -377,6 +405,7 @@ const ComboBox = forwardRef(
       size,
       titleText,
       translateWithId,
+      typeahead = false,
       warn,
       warnText,
       allowCustomValue = false,
@@ -413,10 +442,7 @@ const ComboBox = forwardRef(
         }
       }
     }, [autoAlign, floatingStyles, refs.floating, parentWidth]);
-    const prefix = usePrefix();
-    const { isFluid } = useContext(FormContext);
-    const textInput = useRef<HTMLInputElement>(null);
-    const comboBoxInstanceId = useId();
+
     const [inputValue, setInputValue] = useState(
       getInputValue({
         initialSelectedItem,
@@ -425,6 +451,39 @@ const ComboBox = forwardRef(
         selectedItem: selectedItemProp,
       })
     );
+
+    const [typeaheadText, setTypeaheadText] = useState('');
+
+    useEffect(() => {
+      if (typeahead) {
+        if (inputValue.length >= prevInputLengthRef.current) {
+          if (inputValue) {
+            const filteredItems = items.filter((item) =>
+              autocompleteCustomFilter({
+                item: itemToString(item),
+                inputValue: inputValue,
+              })
+            );
+            if (filteredItems.length > 0) {
+              const suggestion = itemToString(filteredItems[0]);
+              setTypeaheadText(suggestion.slice(inputValue.length));
+            } else {
+              setTypeaheadText('');
+            }
+          } else {
+            setTypeaheadText('');
+          }
+        } else {
+          setTypeaheadText('');
+        }
+        prevInputLengthRef.current = inputValue.length;
+      }
+    }, [typeahead, inputValue, items, itemToString, autocompleteCustomFilter]);
+
+    const prefix = usePrefix();
+    const { isFluid } = useContext(FormContext);
+    const textInput = useRef<HTMLInputElement>(null);
+    const comboBoxInstanceId = useId();
     const [isFocused, setIsFocused] = useState(false);
     const [prevSelectedItem, setPrevSelectedItem] = useState<ItemType | null>();
     const [doneInitialSelectedItem, setDoneInitialSelectedItem] =
@@ -450,7 +509,9 @@ const ComboBox = forwardRef(
       inputValue: string | null
     ) =>
       items.filter((item) =>
-        shouldFilterItem
+        typeahead
+          ? autocompleteCustomFilter({ item: itemToString(item), inputValue })
+          : shouldFilterItem
           ? shouldFilterItem({
               item,
               itemToString,
@@ -487,7 +548,7 @@ const ComboBox = forwardRef(
         inputValue
       );
 
-    const stateReducer = React.useCallback(
+    const stateReducer = useCallback(
       (state, actionAndChanges) => {
         const { type, changes } = actionAndChanges;
         const { highlightedIndex } = changes;
@@ -664,8 +725,11 @@ const ComboBox = forwardRef(
         return itemToString(item);
       },
       onInputValueChange({ inputValue }) {
-        setInputValue(inputValue || '');
-        setHighlightedIndex(indexToHighlight(inputValue));
+        const normalizedInput = inputValue || '';
+
+        setInputValue(normalizedInput);
+        setHighlightedIndex(indexToHighlight(normalizedInput));
+        setCursorPosition(inputValue === null ? 0 : normalizedInput.length);
       },
       onSelectedItemChange({ selectedItem }) {
         onChange({ selectedItem });
@@ -717,6 +781,11 @@ const ComboBox = forwardRef(
       downshiftSetInputValue,
       toggleMenu,
     ]);
+    useEffect(() => {
+      if (inputRef.current) {
+        inputRef.current.setSelectionRange(cursorPosition, cursorPosition);
+      }
+    }, [inputValue, cursorPosition]);
 
     const buttonProps = getToggleButtonProps({
       disabled: disabled || readOnly,
@@ -777,6 +846,17 @@ const ComboBox = forwardRef(
       ]
     );
 
+    useEffect(() => {
+      if (textInput.current) {
+        if (inputRef.current && typeaheadText) {
+          const selectionStart = inputValue.length;
+          const selectionEnd = selectionStart + typeaheadText.length;
+
+          inputRef.current.value = inputValue + typeaheadText;
+          inputRef.current.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }
+    }, [inputValue, typeaheadText]);
     return (
       <div className={wrapperClasses}>
         {titleText && (
@@ -810,7 +890,12 @@ const ComboBox = forwardRef(
               {...getInputProps({
                 'aria-controls': isOpen ? undefined : menuProps.id,
                 placeholder,
-                ref: mergeRefs(textInput, ref),
+                value: inputValue,
+                onChange: (e) => {
+                  const newValue = e.target.value;
+                  downshiftSetInputValue(newValue);
+                },
+                ref: mergeRefs(textInput, ref, inputRef),
                 onKeyDown: (
                   event: KeyboardEvent<HTMLInputElement> & {
                     preventDownshiftDefault: boolean;
@@ -877,6 +962,20 @@ const ComboBox = forwardRef(
                     event.preventDownshiftDefault = true;
                     if (isOpen) {
                       toggleMenu();
+                    }
+                  }
+                  if (typeahead && event.key === 'Tab') {
+                    //  event.preventDefault();
+                    const matchingItem = items.find((item) =>
+                      itemToString(item)
+                        .toLowerCase()
+                        .startsWith(inputValue.toLowerCase())
+                    );
+                    if (matchingItem) {
+                      const newValue = itemToString(matchingItem);
+                      downshiftSetInputValue(newValue);
+                      setCursorPosition(newValue.length);
+                      selectItem(matchingItem);
                     }
                   }
                 },
@@ -1148,6 +1247,7 @@ ComboBox.propTypes = {
    * Specify your own filtering logic by passing in a `shouldFilterItem`
    * function that takes in the current input and an item and passes back
    * whether or not the item should be filtered.
+   * this prop will be ignored if `typeahead` prop is enabled
    */
   shouldFilterItem: PropTypes.func,
 
@@ -1172,6 +1272,11 @@ ComboBox.propTypes = {
    * and returns the localized string for the message
    */
   translateWithId: PropTypes.func,
+
+  /**
+   * **Experimental**: will enable autcomplete and typeahead for the input field
+   */
+  typeahead: PropTypes.bool,
 
   /**
    * Specify whether the control is currently in warning state
