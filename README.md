@@ -305,6 +305,7 @@ check out our [Contributing Guide](/.github/CONTRIBUTING.md) and our
   <tr>
     <td align="center"><a href="https://github.com/NabeelAyubee"><img src="https://avatars.githubusercontent.com/u/64087875?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Md Nabeel Ayubee</b></sub></a><br /><a href="https://github.com/carbon-design-system/carbon/commits?author=NabeelAyubee" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/pamrulla"><img src="https://avatars.githubusercontent.com/u/4942741?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Patan Amrulla Khan</b></sub></a><br /><a href="https://github.com/carbon-design-system/carbon/commits?author=pamrulla" title="Code">💻</a> <a href="https://github.com/carbon-design-system/carbon/commits?author=pamrulla" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/soumyaraju"><img src="https://avatars.githubusercontent.com/u/41182657?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Soumya Raju</b></sub></a><br /><a href="https://github.com/carbon-design-system/carbon/commits?author=soumyaraju" title="Code">💻</a></td>
   </tr>
 </table>
 
